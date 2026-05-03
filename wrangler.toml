@@ -1,0 +1,8 @@
+name = "rpc-hub"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+
+[vars]
+CHAIN = "ethereum"
+CACHE_ENABLED = "true"
+RPC_TIMEOUT = "10000"
