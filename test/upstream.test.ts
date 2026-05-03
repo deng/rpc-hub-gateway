@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  parseUpstreams, createUpstreamStates, selectUpstreamForWrite,
+  parseUpstreams, selectUpstreamForWrite,
   selectUpstreamsForRead, recordSuccess, recordFailure,
   isAllDegraded, getUpstreamsHealth,
 } from '../src/upstream';
@@ -14,7 +14,6 @@ function makeState(url: string, overrides?: Partial<UpstreamState>): UpstreamSta
     lastFailure: 0,
     latency: 0,
     ...overrides,
-    config: { url, weight: 1, type: 'primary', timeout: 10000, ...(overrides?.config || {}) },
   };
 }
 
