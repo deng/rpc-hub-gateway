@@ -19,7 +19,7 @@ export async function getCacheKey(body: string): Promise<Request> {
 
 export async function getCached(key: Request): Promise<Response | null> {
   try {
-    return await caches.default.match(key);
+    return (await caches.default.match(key)) ?? null;
   } catch {
     return null;
   }
