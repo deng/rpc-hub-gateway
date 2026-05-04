@@ -4,7 +4,6 @@ import { Env, Variables, RpcRequest, ChainConfig, UpstreamState } from './types'
 import { getEvmConfig } from './chains/evm';
 import { getSolanaConfig } from './chains/solana';
 import { getSuiConfig } from './chains/sui';
-import { getAptosConfig } from './chains/aptos';
 import {
   parseUpstreams, createUpstreamStates, selectUpstreamForWrite,
   selectUpstreamsForRead, recordSuccess, recordFailure,
@@ -26,9 +25,6 @@ function loadChainConfig(env: Env): ChainConfig {
       return getSolanaConfig();
     case 'sui':
       return getSuiConfig();
-    case 'aptos':
-    case 'apt':
-      return getAptosConfig();
     default:
       return getEvmConfig();
   }
@@ -164,13 +160,6 @@ app.post('/', async (c) => {
     return c.json(jsonRpcError(null, -32005, 'rate limit exceeded'), 429);
   }
 
-  // REST pass-through mode (e.g. Aptos): forward all POST requests as-is
-  const isREST = chainConfig.readMethods.size === 0 && chainConfig.writeMethods.size === 0;
-  if (isREST) {
-    const { data, status } = await forwardSingle(bodyStr, states, false, timeoutMs);
-    try { c.executionCtx.waitUntil(Promise.resolve(cleanupBuckets())); } catch { /* no executionCtx */ }
-    return c.json(data, status as 200 | 400 | 429 | 413 | 500 | 502);
-  }
 
   // Parse RPC body
   let requests: RpcRequest[];
