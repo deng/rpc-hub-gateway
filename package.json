@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "dotenv -- wrangler deploy",
-    "deploy:eth": "CHAIN=ethereum dotenv -- wrangler deploy --name eth-rpc-hub",
+    "deploy:eth": "CHAIN=ethereum dotenv -- npx wrangler deploy --config wrangler.toml",
+    "deploy:bsc": "CHAIN=bsc dotenv -- npx wrangler deploy --config wrangler.bsc.toml",
+    "deploy:sol": "CHAIN=solana dotenv -- npx wrangler deploy --config wrangler.sol.toml",
+    "deploy:sui": "CHAIN=sui dotenv -- npx wrangler deploy --config wrangler.sui.toml",
+    "deploy:apt": "CHAIN=aptos dotenv -- npx wrangler deploy --config wrangler.apt.toml",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
