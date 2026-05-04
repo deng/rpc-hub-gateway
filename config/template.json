@@ -1,0 +1,8 @@
+[
+  {
+    "url": "https://YOUR_RPC_PROVIDER.com/KEY",
+    "weight": 1,
+    "type": "primary",
+    "timeout": 10000
+  }
+]
