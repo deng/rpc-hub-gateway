@@ -5,12 +5,20 @@
 ```bash
 npm run dev           # Start local Wrangler dev server on :8787
 npm run deploy        # Deploy to Cloudflare Workers
-npm run deploy:eth    # Deploy Ethereum worker
+npm run deploy:eth    # Deploy Ethereum worker (eth-rpc-hub)
 npm test              # Run all tests via Vitest
 npm run typecheck     # Type-check with tsc --noEmit
 npm run upstream:set  # Interactive: set UPSTREAMS secret
 npm run upstream:add  # Interactive: add new upstream node
 ```
+
+## Deploy
+
+- Worker name: `eth-rpc-hub`
+- Route: `eth-rpc.bithub.pro` (zone: `a2377099496ecf3fe85caa580e64b070`)
+- DNS: CNAME `eth-rpc` → `eth-rpc-hub.deng-zz.workers.dev` (proxied)
+- Deploy: `npm run deploy:eth`
+- Requires `.env` with `CLOUDFLARE_API_TOKEN`
 
 ## Architecture
 

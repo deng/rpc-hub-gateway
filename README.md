@@ -15,8 +15,8 @@ Each chain is deployed as an independent Worker:
 
 | Domain | Chain | Worker Name |
 |--------|-------|-------------|
-| `eth.rpc-hub.example.com` | Ethereum | `eth-rpc-hub` |
-| `sol.rpc-hub.example.com` | Solana | `sol-rpc-hub` |
+| `eth-rpc.bithub.pro` | Ethereum | `eth-rpc-hub` |
+| `sol-rpc.bithub.pro` | Solana | `sol-rpc-hub` |
 
 ## Getting Started
 
@@ -31,8 +31,31 @@ npm run dev     # local dev on :8787
 # Ethereum
 npm run deploy:eth
 
-# Solana
+# Solana (after adding solana chain config)
 npm run deploy:sol
+```
+
+## DNS 配置
+
+Worker 部署后，需要在 Cloudflare Dashboard 添加 DNS 记录使自定义域名生效：
+
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)，选择对应站点
+2. **DNS → 添加记录**
+3. 填入：
+
+   | 类型 | 名称 | 目标 | 代理 |
+   |------|------|------|------|
+   | `CNAME` | `eth-rpc` | `eth-rpc-hub.deng-zz.workers.dev` | ☁️ 已代理 |
+
+4. 保存后即可通过 `https://eth-rpc.bithub.pro/` 访问
+
+> 注意：DNS 记录必须开启橙色云（代理）状态，Worker 路由才能生效。
+
+## Upstream 管理
+
+```bash
+npm run upstream:set    # 交互式设置完整的 UPSTREAMS JSON
+npm run upstream:add    # 交互式新增上游节点
 ```
 
 ## API
