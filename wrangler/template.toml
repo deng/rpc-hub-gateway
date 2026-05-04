@@ -1,0 +1,13 @@
+name = "<chain>-rpc-hub"
+main = "../src/index.ts"
+compatibility_date = "2026-05-01"
+workers_dev = true
+
+routes = [
+  { pattern = "<chain>-rpc.<your-domain>/*", zone_id = "<zone-id>" }
+]
+
+[vars]
+CHAIN = "<chain>"
+CACHE_ENABLED = "true"
+RPC_TIMEOUT = "10000"

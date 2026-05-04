@@ -5,3 +5,9 @@ dist/
 .DS_Store
 .wrangler/
 .dev.vars
+
+# 配置文件 — 只提交模板，其余忽略
+config/*
+!config/template.json
+wrangler/*
+!wrangler/template.toml
