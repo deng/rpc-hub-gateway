@@ -18,15 +18,15 @@ npm run upstream:add  # Interactive: add new upstream node
 
 ## Deploy
 
-All workers deploy to zone `a2377099496ecf3fe85caa580e64b070`. Requires `.env` with `CLOUDFLARE_API_TOKEN`.
+All workers deploy to your Cloudflare zone. Requires `.env` with `CLOUDFLARE_API_TOKEN`.
 
 | Chain | Worker Name | Route | Deploy Command |
 |-------|------------|-------|----------------|
-| Ethereum | `eth-rpc-hub` | `eth-rpc.bithub.pro` | `npm run deploy:eth` |
-| BSC | `bsc-rpc-hub` | `bsc-rpc.bithub.pro` | `npm run deploy:bsc` |
-| Solana | `sol-rpc-hub` | `sol-rpc.bithub.pro` | `npm run deploy:sol` |
-| Sui | `sui-rpc-hub` | `sui-rpc.bithub.pro` | `npm run deploy:sui` |
-| Aptos | `apt-rpc-hub` | `apt-rpc.bithub.pro` | `npm run deploy:apt` |
+| Ethereum | `eth-rpc-hub` | `eth-rpc.<your-domain>` | `npm run deploy:eth` |
+| BSC | `bsc-rpc-hub` | `bsc-rpc.<your-domain>` | `npm run deploy:bsc` |
+| Solana | `sol-rpc-hub` | `sol-rpc.<your-domain>` | `npm run deploy:sol` |
+| Sui | `sui-rpc-hub` | `sui-rpc.<your-domain>` | `npm run deploy:sui` |
+| Aptos | `apt-rpc-hub` | `apt-rpc.<your-domain>` | `npm run deploy:apt` |
 
 ## Architecture
 
@@ -65,7 +65,8 @@ const res = await worker.fetch(req, mockEnv);
 
 1. Create `src/chains/<chain>.ts` with method classification and cache rules
 2. Add chain to `loadChainConfig()` in `src/index.ts`
-3. Create a deploy script in `package.json`
+3. Create `wrangler/<chain>.toml` with name, route, and CHAIN var
+4. Add deploy script in `package.json`
 
 ## Configuration
 
