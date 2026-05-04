@@ -34,8 +34,8 @@ const FALLBACK_RPCS = {
 const WORKER_MAP = { eth: 'eth-rpc-hub', bsc: 'bsc-rpc-hub', sol: 'sol-rpc-hub', sui: 'sui-rpc-hub', apt: 'apt-rpc-hub' };
 
 const HEALTH_CHECKS = {
-  eth:  { method: 'POST', body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_chainId', params: [], id: 1 }), expect: r => r.result !== undefined },
-  bsc:  { method: 'POST', body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_chainId', params: [], id: 1 }), expect: r => r.result !== undefined },
+  eth:  { method: 'POST', body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_chainId', params: [], id: 1 }), expect: r => r.result === '0x1' },
+  bsc:  { method: 'POST', body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_chainId', params: [], id: 1 }), expect: r => r.result === '0x38' },
   sol:  { method: 'POST', body: JSON.stringify({ jsonrpc: '2.0', method: 'getVersion', params: [], id: 1 }), expect: r => r.result !== undefined },
   sui:  { method: 'POST', body: JSON.stringify({ jsonrpc: '2.0', method: 'sui_getChainIdentifier', params: [], id: 1 }), expect: r => r.result !== undefined },
   apt:  { method: 'GET', body: null, expect: r => r && typeof r === 'object' && r.chain_id !== undefined },
@@ -166,4 +166,4 @@ async function main() {
   }
 }
 
-main().catch(console.error);
+main().catch(err => { console.error(err); process.exitCode = 1; });

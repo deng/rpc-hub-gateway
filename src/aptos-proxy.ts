@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { parseUpstreams, createUpstreamStates, selectUpstreamForWrite, selectUpstreamsForRead, recordSuccess, recordFailure, isAllDegraded } from './upstream';
+import { parseUpstreams, createUpstreamStates, selectUpstreamForWrite, recordSuccess, recordFailure, isAllDegraded } from './upstream';
 import { checkRateLimit, cleanupBuckets } from './ratelimit';
 import type { Env, UpstreamState } from './types';
 
@@ -10,8 +10,14 @@ app.use('/*', cors({ origin: '*', allowMethods: ['GET', 'POST', 'PUT', 'DELETE',
 
 // Health
 app.get('/health', async (c) => {
-  const states = c.get('upstreamStates');
-  if (!states) return c.json({ status: 'healthy', chain: 'aptos' });
+  const env = c.env;
+  let states: UpstreamState[];
+  try {
+    states = createUpstreamStates(parseUpstreams(env.UPSTREAMS));
+    c.set('upstreamStates', states);
+  } catch {
+    return c.json({ status: 'healthy', chain: 'aptos', upstreams: [] });
+  }
   return c.json({
     status: isAllDegraded(states) ? 'degraded' : 'healthy',
     chain: 'aptos',
@@ -39,47 +45,64 @@ app.all('/*', async (c) => {
     return c.json({ error: 'rate limit exceeded' }, 429);
   }
 
-  // Select upstream
-  const active = selectUpstreamsForRead(states);
-  if (active.length === 0) {
+  // Buffer body once for retry (binary-safe)
+  let body: ArrayBuffer | undefined;
+  if (!['GET', 'HEAD'].includes(c.req.method)) {
+    body = await c.req.raw.arrayBuffer();
+  }
+
+  // Build target URL
+  const url = new URL(c.req.url);
+  const buildTarget = (base: string) => new URL(url.pathname + url.search, base).toString();
+  const doFetch = async (state: UpstreamState, target: string) => {
+    const start = Date.now();
+    const res = await fetch(target, {
+      method: c.req.method,
+      headers: c.req.raw.headers,
+      body,
+      signal: AbortSignal.timeout(timeoutMs),
+      redirect: 'follow',
+    });
+    recordSuccess(state, Date.now() - start);
+    return res;
+  };
+
+  // Pick one upstream, retry once on failure
+  const first = selectUpstreamForWrite(states);
+  if (!first) {
     return c.json({ error: 'all upstreams degraded' }, 502);
   }
 
-  // Pick one upstream (race-style, first-wins)
-  const controllers = active.map(() => new AbortController());
   try {
-    const result = await Promise.any(
-      active.map(async (state, i) => {
-        // Build target URL: preserve request path
-        const url = new URL(c.req.url);
-        const target = new URL(url.pathname + url.search, state.config.url).toString();
-
-        const start = Date.now();
-        const res = await fetch(target, {
-          method: c.req.method,
-          headers: c.req.raw.headers,
-          body: ['GET', 'HEAD'].includes(c.req.method) ? undefined : await c.req.raw.clone().text(),
-          signal: controllers[i].signal,
-          redirect: 'follow',
-        });
-        recordSuccess(state, Date.now() - start);
-        controllers.forEach((ctrl, j) => { if (j !== i) ctrl.abort(); });
-        return res;
-      }),
-    );
-
-    const response = new Response(result.body, {
-      status: result.status,
-      statusText: result.statusText,
-      headers: result.headers,
+    const res = await doFetch(first, buildTarget(first.config.url));
+    const response = new Response(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: res.headers,
     });
-    // Clean up rate limit buckets
     try { c.executionCtx.waitUntil(Promise.resolve(cleanupBuckets())); } catch { /* no executionCtx */ }
     return response;
   } catch {
-    active.forEach(s => recordFailure(s));
-    try { c.executionCtx.waitUntil(Promise.resolve(cleanupBuckets())); } catch { /* no executionCtx */ }
-    return c.json({ error: 'upstream request failed' }, 502);
+    recordFailure(first);
+    const second = selectUpstreamForWrite(states);
+    if (!second || second.config.url === first.config.url) {
+      try { c.executionCtx.waitUntil(Promise.resolve(cleanupBuckets())); } catch { /* no executionCtx */ }
+      return c.json({ error: 'upstream request failed' }, 502);
+    }
+    try {
+      const res = await doFetch(second, buildTarget(second.config.url));
+      const response = new Response(res.body, {
+        status: res.status,
+        statusText: res.statusText,
+        headers: res.headers,
+      });
+      try { c.executionCtx.waitUntil(Promise.resolve(cleanupBuckets())); } catch { /* no executionCtx */ }
+      return response;
+    } catch {
+      recordFailure(second);
+      try { c.executionCtx.waitUntil(Promise.resolve(cleanupBuckets())); } catch { /* no executionCtx */ }
+      return c.json({ error: 'upstream request failed' }, 502);
+    }
   }
 });
 
