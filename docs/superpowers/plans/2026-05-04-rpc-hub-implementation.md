@@ -15,10 +15,10 @@
 **Files:**
 - Create: `gateway/rpc-hub/package.json`
 - Create: `gateway/rpc-hub/tsconfig.json`
-- Create: `gateway/rpc-hub/wrangler.toml`
+- Create: `gateway/rpc-hub/wrangler/eth.toml` (per-chain config in `wrangler/` dir)
 - Create: `gateway/rpc-hub/.gitignore`
-- Create: `gateway/rpc-hub/.env.example`
-- Create: `gateway/rpc-hub/.dev.vars.example`
+- Create: `gateway/rpc-hub/.env` (not committed)
+- Create: `gateway/rpc-hub/config/eth.json` (upstream config in `config/` dir)
 
 - [ ] **Step 1: Create `package.json`**
 
@@ -71,18 +71,25 @@
 }
 ```
 
-- [ ] **Step 3: Create `wrangler.toml`**
+- [ ] **Step 3: Create `wrangler/eth.toml`**
 
 ```toml
-name = "rpc-hub"
-main = "src/index.ts"
+name = "eth-rpc-hub"
+main = "../src/index.ts"
 compatibility_date = "2026-05-01"
+workers_dev = true
+
+routes = [
+  { pattern = "<chain>-rpc.<your-domain>/*", zone_id = "<zone-id>" }
+]
 
 [vars]
 CHAIN = "ethereum"
 CACHE_ENABLED = "true"
 RPC_TIMEOUT = "10000"
 ```
+
+> 每链一个配置在 `wrangler/` 目录下（`eth.toml`, `bsc.toml` 等），使用 `--config wrangler/<chain>.toml` 部署。
 
 - [ ] **Step 4: Create `.gitignore`**
 
@@ -96,45 +103,38 @@ dist/
 .dev.vars
 ```
 
-- [ ] **Step 5: Create `.env.example`**
+- [ ] **Step 5: Create `.env`** (add to `.gitignore`)
 
 ```
 CLOUDFLARE_API_TOKEN=
 ```
 
-- [ ] **Step 6: Create `.dev.vars.example`**
-
-```
-CHAIN=ethereum
-CACHE_ENABLED=true
-RPC_TIMEOUT=10000
-UPSTREAMS=[{"url":"https://eth-mainnet.g.alchemy.com/v2/demo","weight":1,"type":"primary","timeout":10000}]
-```
+> 上游节点配置使用 `config/<chain>.json` 文件，通过 `npm run upstream:sync -- <chain>` 同步到 Worker。
 
 - [ ] **Step 7: Install dependencies**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npm install
+cd gateway/rpc-hub && npm install
 ```
 
 - [ ] **Step 8: Create empty source directories so tsc doesn't complain**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && mkdir -p src/chains test
+cd gateway/rpc-hub && mkdir -p src/chains test
 ```
 
 - [ ] **Step 9: Verify TypeScript compiles cleanly**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npx tsc --noEmit
+cd gateway/rpc-hub && npx tsc --noEmit
 ```
 Expected: No errors.
 
 - [ ] **Step 10: Commit**
 
 ```bash
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet add gateway/rpc-hub/package.json gateway/rpc-hub/tsconfig.json gateway/rpc-hub/wrangler.toml gateway/rpc-hub/.gitignore gateway/rpc-hub/.env.example gateway/rpc-hub/.dev.vars.example gateway/rpc-hub/package-lock.json
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet commit -m "chore(rpc-hub): scaffold project structure"
+git add gateway/rpc-hub/package.json gateway/rpc-hub/tsconfig.json gateway/rpc-hub/wrangler/ gateway/rpc-hub/.gitignore gateway/rpc-hub/package-lock.json
+git commit -m "chore(rpc-hub): scaffold project structure"
 ```
 
 ---
@@ -340,15 +340,15 @@ describe('extractMethod', () => {
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npx vitest run test/utils.test.ts
+cd gateway/rpc-hub && npx vitest run test/utils.test.ts
 ```
 Expected: All tests PASS.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet add gateway/rpc-hub/src/types.ts gateway/rpc-hub/src/utils.ts gateway/rpc-hub/test/utils.test.ts
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet commit -m "feat(rpc-hub): add types and utility functions"
+git add gateway/rpc-hub/src/types.ts gateway/rpc-hub/src/utils.ts gateway/rpc-hub/test/utils.test.ts
+git commit -m "feat(rpc-hub): add types and utility functions"
 ```
 
 ---
@@ -448,15 +448,15 @@ describe('getEvmConfig', () => {
 - [ ] **Step 3: Run tests**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npx vitest run test/chains/evm.test.ts
+cd gateway/rpc-hub && npx vitest run test/chains/evm.test.ts
 ```
 Expected: All tests PASS.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet add gateway/rpc-hub/src/chains/evm.ts gateway/rpc-hub/test/chains/evm.test.ts
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet commit -m "feat(rpc-hub): add EVM chain config with method classification"
+git add gateway/rpc-hub/src/chains/evm.ts gateway/rpc-hub/test/chains/evm.test.ts
+git commit -m "feat(rpc-hub): add EVM chain config with method classification"
 ```
 
 ---
@@ -670,15 +670,15 @@ describe('getUpstreamsHealth', () => {
 - [ ] **Step 3: Run tests**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npx vitest run test/upstream.test.ts
+cd gateway/rpc-hub && npx vitest run test/upstream.test.ts
 ```
 Expected: All tests PASS.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet add gateway/rpc-hub/src/upstream.ts gateway/rpc-hub/test/upstream.test.ts
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet commit -m "feat(rpc-hub): add upstream management with load balancing and failover"
+git add gateway/rpc-hub/src/upstream.ts gateway/rpc-hub/test/upstream.test.ts
+git commit -m "feat(rpc-hub): add upstream management with load balancing and failover"
 ```
 
 ---
@@ -763,15 +763,15 @@ describe('checkRateLimit', () => {
 - [ ] **Step 3: Run tests**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npx vitest run test/ratelimit.test.ts
+cd gateway/rpc-hub && npx vitest run test/ratelimit.test.ts
 ```
 Expected: All tests PASS.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet add gateway/rpc-hub/src/ratelimit.ts gateway/rpc-hub/test/ratelimit.test.ts
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet commit -m "feat(rpc-hub): add IP-based rate limiter"
+git add gateway/rpc-hub/src/ratelimit.ts gateway/rpc-hub/test/ratelimit.test.ts
+git commit -m "feat(rpc-hub): add IP-based rate limiter"
 ```
 
 ---
@@ -866,15 +866,15 @@ describe('getMethodTTL', () => {
 - [ ] **Step 3: Run tests**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npx vitest run test/cache.test.ts
+cd gateway/rpc-hub && npx vitest run test/cache.test.ts
 ```
 Expected: All tests PASS.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet add gateway/rpc-hub/src/cache.ts gateway/rpc-hub/test/cache.test.ts
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet commit -m "feat(rpc-hub): add RPC cache module"
+git add gateway/rpc-hub/src/cache.ts gateway/rpc-hub/test/cache.test.ts
+git commit -m "feat(rpc-hub): add RPC cache module"
 ```
 
 ---
@@ -1261,22 +1261,22 @@ describe('RPC Hub Worker', () => {
 - [ ] **Step 3: Run all tests**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npx vitest run
+cd gateway/rpc-hub && npx vitest run
 ```
 Expected: 20+ tests PASS.
 
 - [ ] **Step 4: Typecheck**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npx tsc --noEmit
+cd gateway/rpc-hub && npx tsc --noEmit
 ```
 Expected: No errors.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet add gateway/rpc-hub/src/index.ts gateway/rpc-hub/test/index.test.ts
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet commit -m "feat(rpc-hub): main worker with RPC proxy, caching, and rate limiting"
+git add gateway/rpc-hub/src/index.ts gateway/rpc-hub/test/index.test.ts
+git commit -m "feat(rpc-hub): main worker with RPC proxy, caching, and rate limiting"
 ```
 
 ---
@@ -1432,13 +1432,13 @@ Local dev uses `.dev.vars` (not committed).
 - [ ] **Step 3: Verify typecheck still passes after adding files**
 
 ```bash
-cd /Users/dengzhizhong/data/repos/deng/ZeroWallet/gateway/rpc-hub && npx tsc --noEmit
+cd gateway/rpc-hub && npx tsc --noEmit
 ```
 Expected: No errors.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet add gateway/rpc-hub/README.md gateway/rpc-hub/CLAUDE.md
-git -C /Users/dengzhizhong/data/repos/deng/ZeroWallet commit -m "docs(rpc-hub): add README and CLAUDE.md"
+git add gateway/rpc-hub/README.md gateway/rpc-hub/CLAUDE.md
+git commit -m "docs(rpc-hub): add README and CLAUDE.md"
 ```
