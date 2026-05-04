@@ -92,10 +92,10 @@ npm run upstream:sync -- apt   # 同步 Aptos 上游
 
 支持多节点负载均衡：
 - **weight**: 权重，越高分配到请求越多
-- **type**: `primary` / `secondary`（仅用于标识）
+- **type**: `primary` / `secondary`，写请求优先选择 primary 节点，仅当全部 primary 不可用时回退到 secondary
 - **timeout**: 单次请求超时时间（ms）
 - 读请求（query）：使用 Promise.any 取最快响应
-- 写请求（mutation）：按权重轮询分发
+- 写请求（mutation）：按权重随机分发
 
 ## API
 
@@ -111,11 +111,11 @@ npm run upstream:sync -- apt   # 同步 Aptos 上游
 | 内容 | 文件 | 风险 | 是否在 .gitignore |
 |------|------|------|:-:|
 | Cloudflare API Token | `.env` | 可操作你的 Cloudflare Worker | ✅ |
-| RPC API Key (Alchemy/Infura) | `config/*.json` | API Key 泄露，被盗用产生费用 | ❌ |
+| RPC API Key (Alchemy/Infura) | `config/*.json` | API Key 泄露，被盗用产生费用 | ✅（除 template.json） |
 | workers.dev 子域名 | `README.md / CLAUDE.md` | 暴露后可能被扫描攻击 | - |
 
 **建议：**
-- `config/*.json` 中包含 API Key 时，建议加入 `.gitignore` 或使用环境变量引用
+- `config/*.json` 中的 API Key 已在 `.gitignore` 保护（保留 `template.json` 作为模板）
 - 文档中 `*.workers.dev` 地址是账户特定信息，fork 后需替换为自己的地址
 - Cloudflare API Token 请使用最小权限（仅 Worker 相关权限）
 

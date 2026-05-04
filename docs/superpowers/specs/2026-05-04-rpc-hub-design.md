@@ -307,11 +307,19 @@ gateway/rpc-hub/
 │   ├── cache.test.ts        # 缓存逻辑测试
 │   ├── ratelimit.test.ts    # 限流逻辑测试
 │   └── integration.test.ts  # 集成测试（模拟完整请求流）
-├── wrangler.toml            # 基础 Worker 配置
+├── wrangler/                # 每链一份 Worker 配置
+│   ├── eth.toml
+│   ├── bsc.toml
+│   ├── sol.toml
+│   ├── template.toml        # 新增链模板
+├── config/                  # 每链一份上游节点配置
+│   ├── eth.json
+│   ├── template.json        # 格式模板
+├── scripts/
+│   └── upstream-sync.sh     # 配置文件→Worker secret 同步脚本
 ├── package.json
 ├── tsconfig.json
-├── .env.example
-├── .dev.vars.example
+├── .env                     # Cloudflare API Token（不提交）
 └── README.md
 ```
 
@@ -321,8 +329,10 @@ gateway/rpc-hub/
 {
   "scripts": {
     "dev": "wrangler dev",
-    "deploy:eth": "CHAIN=ethereum wrangler deploy --name eth-rpc-hub",
-    "deploy:sol": "CHAIN=solana wrangler deploy --name sol-rpc-hub",
+    "deploy:eth": "CHAIN=ethereum dotenv -- npx wrangler deploy --config wrangler/eth.toml",
+    "deploy:bsc": "CHAIN=bsc dotenv -- npx wrangler deploy --config wrangler/bsc.toml",
+    "deploy:sol": "CHAIN=solana dotenv -- npx wrangler deploy --config wrangler/sol.toml",
+    "upstream:sync": "bash scripts/upstream-sync.sh",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
