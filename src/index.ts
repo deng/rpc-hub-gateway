@@ -2,6 +2,9 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { Env, Variables, RpcRequest, ChainConfig, UpstreamState } from './types';
 import { getEvmConfig } from './chains/evm';
+import { getSolanaConfig } from './chains/solana';
+import { getSuiConfig } from './chains/sui';
+import { getAptosConfig } from './chains/aptos';
 import {
   parseUpstreams, createUpstreamStates, selectUpstreamForWrite,
   selectUpstreamsForRead, recordSuccess, recordFailure,
@@ -13,7 +16,22 @@ import { isCacheable, getMethodTTL, getCacheKey, getCached, setCache } from './c
 
 function loadChainConfig(env: Env): ChainConfig {
   const chain = (env.CHAIN || 'ethereum').toLowerCase();
-  return chain === 'ethereum' || chain === 'evm' ? getEvmConfig() : getEvmConfig();
+  switch (chain) {
+    case 'ethereum':
+    case 'evm':
+    case 'bsc':
+      return getEvmConfig();
+    case 'solana':
+    case 'sol':
+      return getSolanaConfig();
+    case 'sui':
+      return getSuiConfig();
+    case 'aptos':
+    case 'apt':
+      return getAptosConfig();
+    default:
+      return getEvmConfig();
+  }
 }
 
 async function forwardSingle(
@@ -144,6 +162,14 @@ app.post('/', async (c) => {
   const ip = c.req.header('cf-connecting-ip') || 'unknown';
   if (!checkRateLimit(ip).allowed) {
     return c.json(jsonRpcError(null, -32005, 'rate limit exceeded'), 429);
+  }
+
+  // REST pass-through mode (e.g. Aptos): forward all POST requests as-is
+  const isREST = chainConfig.readMethods.size === 0 && chainConfig.writeMethods.size === 0;
+  if (isREST) {
+    const { data, status } = await forwardSingle(bodyStr, states, false, timeoutMs);
+    try { c.executionCtx.waitUntil(Promise.resolve(cleanupBuckets())); } catch { /* no executionCtx */ }
+    return c.json(data, status as 200 | 400 | 429 | 413 | 500 | 502);
   }
 
   // Parse RPC body

@@ -13,10 +13,13 @@ Wallet App → Cloudflare Worker → Upstream RPC Pool (Alchemy / Infura / Self-
 
 Each chain is deployed as an independent Worker:
 
-| Domain | Chain | Worker Name |
-|--------|-------|-------------|
-| `eth-rpc.bithub.pro` | Ethereum | `eth-rpc-hub` |
-| `sol-rpc.bithub.pro` | Solana | `sol-rpc-hub` |
+| Domain | Chain | Worker Name | RPC Protocol |
+|--------|-------|-------------|-------------|
+| `eth-rpc.bithub.pro` | Ethereum | `eth-rpc-hub` | JSON-RPC |
+| `bsc-rpc.bithub.pro` | BSC | `bsc-rpc-hub` | JSON-RPC (EVM) |
+| `sol-rpc.bithub.pro` | Solana | `sol-rpc-hub` | JSON-RPC |
+| `sui-rpc.bithub.pro` | Sui | `sui-rpc-hub` | JSON-RPC |
+| `apt-rpc.bithub.pro` | Aptos | `apt-rpc-hub` | REST API |
 
 ## Getting Started
 
@@ -31,23 +34,34 @@ npm run dev     # local dev on :8787
 # Ethereum
 npm run deploy:eth
 
-# Solana (after adding solana chain config)
+# BSC (EVM compatible)
+npm run deploy:bsc
+
+# Solana
 npm run deploy:sol
+
+# Sui
+npm run deploy:sui
+
+# Aptos
+npm run deploy:apt
 ```
 
 ## DNS 配置
 
 Worker 部署后，需要在 Cloudflare Dashboard 添加 DNS 记录使自定义域名生效：
 
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)，选择对应站点
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)，选择 `bithub.pro` 站点
 2. **DNS → 添加记录**
-3. 填入：
+3. 每条链一条 CNAME 记录：
 
-   | 类型 | 名称 | 目标 | 代理 |
-   |------|------|------|------|
-   | `CNAME` | `eth-rpc` | `eth-rpc-hub.deng-zz.workers.dev` | ☁️ 已代理 |
-
-4. 保存后即可通过 `https://eth-rpc.bithub.pro/` 访问
+| 类型 | 名称 | 目标 | 代理 |
+|------|------|------|------|
+| `CNAME` | `eth-rpc` | `eth-rpc-hub.deng-zz.workers.dev` | ☁️ 已代理 |
+| `CNAME` | `bsc-rpc` | `bsc-rpc-hub.deng-zz.workers.dev` | ☁️ 已代理 |
+| `CNAME` | `sol-rpc` | `sol-rpc-hub.deng-zz.workers.dev` | ☁️ 已代理 |
+| `CNAME` | `sui-rpc` | `sui-rpc-hub.deng-zz.workers.dev` | ☁️ 已代理 |
+| `CNAME` | `apt-rpc` | `apt-rpc-hub.deng-zz.workers.dev` | ☁️ 已代理 |
 
 > 注意：DNS 记录必须开启橙色云（代理）状态，Worker 路由才能生效。
 
