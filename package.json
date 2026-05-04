@@ -17,6 +17,7 @@
     "upstream:set": "bash scripts/upstream-set.sh",
     "upstream:add": "bash scripts/upstream-add.sh",
     "upstream:sync": "bash scripts/upstream-sync.sh",
+    "upstream:fetch": "node scripts/fetch-upstreams.mjs",
     "upstream:local": "cat .dev.vars"
   },
   "dependencies": {
@@ -24,9 +25,13 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250201.0",
+    "chainlist-rpcs": "^0.5.270",
     "dotenv-cli": "^11.0.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0",
-    "wrangler": "^3.100.0"
+    "wrangler": "^4.87.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
