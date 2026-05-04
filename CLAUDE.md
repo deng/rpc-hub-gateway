@@ -8,6 +8,8 @@ npm run deploy        # Deploy to Cloudflare Workers
 npm run deploy:eth    # Deploy Ethereum worker
 npm test              # Run all tests via Vitest
 npm run typecheck     # Type-check with tsc --noEmit
+npm run upstream:set  # Interactive: set UPSTREAMS secret
+npm run upstream:add  # Interactive: add new upstream node
 ```
 
 ## Architecture

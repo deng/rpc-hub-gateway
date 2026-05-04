@@ -9,7 +9,10 @@
     "deploy:eth": "CHAIN=ethereum dotenv -- wrangler deploy --name eth-rpc-hub",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "upstream:set": "bash scripts/upstream-set.sh",
+    "upstream:add": "bash scripts/upstream-add.sh",
+    "upstream:local": "cat .dev.vars"
   },
   "dependencies": {
     "hono": "^4.12.0"
