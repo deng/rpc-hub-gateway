@@ -10,4 +10,4 @@ dist/
 config/*
 !config/template.json
 wrangler/*
-!wrangler/template.toml
+!wrangler/template.tomlwrangler.toml
